@@ -1,0 +1,9 @@
+{
+    "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "\\\\wsl$\\Ubuntu\\usr\\include",
+        "\\\\wsl$\\Ubuntu\\usr\\include\\x86_64-linux-gnu"
+    ]
+}
