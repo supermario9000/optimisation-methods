@@ -35,3 +35,7 @@ void NiutonoMetodas();
 
 //graphic functions
 void openWindow();
+void drawAxes(sf::RenderWindow& window, float offsetX, float offsetY, float width, float height, double minX, double maxX, double yScale, const sf::Font& font);
+void drawFunction(sf::RenderWindow& window, float offsetX, float offsetY, float width, float height, double minX, double maxX, double yScale);
+void drawPoints(sf::RenderWindow& window, float offsetX, float offsetY, float width, float height, double minX, double maxX, double yScale, const std::vector<double>& xs, const sf::Color& color);
+void drawGraph(sf::RenderWindow& window, float offsetX, float offsetY, float width, float height, double minX, double maxX, const sf::Font& font, const std::vector<double>& points, const sf::Color& pointColor, double yScale);
