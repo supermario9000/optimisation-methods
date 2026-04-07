@@ -1,0 +1,23 @@
+{
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.formatOnSave": true
+    },
+    "[c]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.formatOnSave": true
+    },
+    "C_Cpp.default.configurationName": "MinGW64",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "C:/msys64/mingw64/include"
+    ],
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.intelliSenseEngineFallback": "enabled",
+    "C_Cpp.codeAnalysis.excludedPaths": [
+        "${workspaceFolder}/build",
+        "${workspaceFolder}/CMakeFiles"
+    ],
+    "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+    "C_Cpp.default.intelliSenseMode": "windows-gcc-x64"
+}
