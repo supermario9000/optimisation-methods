@@ -1,67 +1,201 @@
-#ifndef LIB_HPP
+﻿#ifndef LIB_HPP
 #define LIB_HPP
-
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include <algorithm>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <numeric>
+#include <sstream>
+#include <string>
+#include <vector>
+
 using namespace std;
 
-// Configuration variables - set these with your student ID values
+using Point3D = array<double, 3>;
+
 extern int a;
 extern int b;
+extern int c;
 
-// Result structure for storing algorithm outcomes
 struct OptimizationResult {
-    vector<double> solution;           // Final point (x, y)
-    double minValue;                   // Minimum function value found
-    int steps;                         // Number of iterations
-    int functionEvaluations;           // Number of function evaluations
-    string algorithmName;              // Name of algorithm used
-    double startingX, startingY;       // Starting point
-    vector<vector<double>> path;       // Path of points visited
+    string algorithmName;
+    double penaltyParameter = 0.0;
+    Point3D startingPoint{};
+    Point3D solution{};
+    double objectiveValue = 0.0;
+    double penaltyValue = 0.0;
+    double equalityValue = 0.0;
+    vector<double> inequalityValues;
+    int steps = 0;
+    int functionEvaluations = 0;
+    vector<vector<double>> path;
 };
 
-// Objective function: f(x, y) = -x*y*(1-x-y)/8
-inline double objectiveFunction(double x, double y) {
-    return -x * y * (1.0 - x - y) / 8.0;
+inline Point3D makePoint(double x, double y, double z)
+{
+    return {x, y, z};
 }
 
-// Gradient of objective function
-// df/dx = -y*(1-2x-y)/8
-// df/dy = -x*(1-x-2y)/8
-inline void computeGradient(double x, double y, double& gradX, double& gradY) {
-    gradX = -y * (1.0 - 2.0 * x - y) / 8.0;
-    gradY = -x * (1.0 - x - 2.0 * y) / 8.0;
+inline vector<double> toVector(const Point3D &point)
+{
+    return {point[0], point[1], point[2]};
 }
 
-// Compute gradient magnitude (norm)
-inline double gradientMagnitude(double x, double y) {
-    double gradX, gradY;
-    computeGradient(x, y, gradX, gradY);
-    return sqrt(gradX * gradX + gradY * gradY);
+inline double dotProduct(const Point3D &lhs, const Point3D &rhs)
+{
+    return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
 }
 
-// Clamp values to valid range [0, 1]
-inline double clamp(double value) {
-    return max(0.0, min(1.0, value));
+inline double norm(const Point3D &point)
+{
+    return sqrt(dotProduct(point, point));
 }
 
-// Check if point is in valid region (x + y <= 1)
-inline bool isValidPoint(double x, double y) {
-    return x >= 0.0 && y >= 0.0 && (x + y) <= 1.0;
+inline Point3D add(const Point3D &lhs, const Point3D &rhs)
+{
+    return {lhs[0] + rhs[0], lhs[1] + rhs[1], lhs[2] + rhs[2]};
 }
 
-// Distance between two points
-inline double distance(double x1, double y1, double x2, double y2) {
-    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+inline Point3D subtract(const Point3D &lhs, const Point3D &rhs)
+{
+    return {lhs[0] - rhs[0], lhs[1] - rhs[1], lhs[2] - rhs[2]};
 }
+
+inline Point3D scale(const Point3D &point, double factor)
+{
+    return {point[0] * factor, point[1] * factor, point[2] * factor};
+}
+
+inline string formatPoint(const Point3D &point, int precision = 6)
+{
+    ostringstream out;
+    out << fixed << setprecision(precision)
+        << '(' << point[0] << ", " << point[1] << ", " << point[2] << ')';
+    return out.str();
+}
+
+inline double objectiveFunction(const Point3D &point)
+{
+    return -point[0] * point[1] * point[2];
+}
+
+inline double equalityConstraint(const Point3D &point)
+{
+    return 2.0 * (point[0] * point[1] + point[1] * point[2] + point[0] * point[2]) - 1.0;
+}
+
+inline vector<double> inequalityConstraints(const Point3D &point)
+{
+    return {-point[0], -point[1], -point[2]};
+}
+
+inline double positivePart(double value)
+{
+    return max(0.0, value);
+}
+
+inline double penaltyViolation(const Point3D &point)
+{
+    double violation = equalityConstraint(point) * equalityConstraint(point);
+    for (double value : inequalityConstraints(point))
+    {
+        double positive = positivePart(value);
+        violation += positive * positive;
+    }
+    return violation;
+}
+
+inline double penaltyFunction(const Point3D &point, double r)
+{
+    return objectiveFunction(point) + penaltyViolation(point) / r;
+}
+
+inline Point3D objectiveGradient(const Point3D &point)
+{
+    return {-point[1] * point[2], -point[0] * point[2], -point[0] * point[1]};
+}
+
+inline Point3D penaltyGradient(const Point3D &point, double r)
+{
+    Point3D grad = objectiveGradient(point);
+
+    const double equality = equalityConstraint(point);
+    const Point3D gradEquality = {
+        2.0 * (point[1] + point[2]),
+        2.0 * (point[0] + point[2]),
+        2.0 * (point[0] + point[1])};
+    grad = add(grad, scale(gradEquality, (2.0 * equality) / r));
+
+    const vector<double> inequalities = inequalityConstraints(point);
+    for (size_t i = 0; i < inequalities.size(); ++i)
+    {
+        if (inequalities[i] > 0.0)
+        {
+            Point3D contribution{};
+            contribution[i] = 1.0;
+            grad = add(grad, scale(contribution, (-2.0 * inequalities[i]) / r));
+        }
+    }
+
+    return grad;
+}
+
+inline bool isFeasiblePoint(const Point3D &point, double tolerance = 1e-12)
+{
+    const vector<double> inequalities = inequalityConstraints(point);
+    return fabs(equalityConstraint(point)) <= tolerance &&
+           all_of(inequalities.begin(), inequalities.end(), [&](double value)
+                  { return value <= tolerance; });
+}
+
+inline Point3D analyticalSolution()
+{
+    const double edge = 1.0 / sqrt(6.0);
+    return {edge, edge, edge};
+}
+
+inline double analyticalMinimumValue()
+{
+    const double edge = 1.0 / sqrt(6.0);
+    return -edge * edge * edge;
+}
+
+inline double euclideanDistance(const Point3D &lhs, const Point3D &rhs)
+{
+    return norm(subtract(lhs, rhs));
+}
+
+inline vector<Point3D> directSearchDirections()
+{
+    const double invSqrt3 = 1.0 / sqrt(3.0);
+    return {
+        {1.0, 0.0, 0.0},
+        {-1.0, 0.0, 0.0},
+        {0.0, 1.0, 0.0},
+        {0.0, -1.0, 0.0},
+        {0.0, 0.0, 1.0},
+        {0.0, 0.0, -1.0},
+        {invSqrt3, invSqrt3, invSqrt3},
+        {invSqrt3, invSqrt3, -invSqrt3},
+        {invSqrt3, -invSqrt3, invSqrt3},
+        {-invSqrt3, invSqrt3, invSqrt3},
+        {invSqrt3, -invSqrt3, -invSqrt3},
+        {-invSqrt3, invSqrt3, -invSqrt3},
+        {-invSqrt3, -invSqrt3, invSqrt3},
+        {-invSqrt3, -invSqrt3, -invSqrt3}};
+}
+
+OptimizationResult minimizePenaltyDirectSearch(const Point3D &startPoint,
+                                               double penaltyParameter,
+                                               double tolerance = 1e-8,
+                                               int maxIterations = 20000,
+                                               double initialStep = 0.25);
 
 #endif
-
