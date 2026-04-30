@@ -24,7 +24,8 @@ extern int a;
 extern int b;
 extern int c;
 
-struct OptimizationResult {
+struct OptimizationResult
+{
     string algorithmName;
     double penaltyParameter = 0.0;
     Point3D startingPoint{};
@@ -197,5 +198,17 @@ OptimizationResult minimizePenaltyDirectSearch(const Point3D &startPoint,
                                                double tolerance = 1e-8,
                                                int maxIterations = 20000,
                                                double initialStep = 0.25);
+
+OptimizationResult minimizePenaltySteepestDescent(const Point3D &startPoint,
+                                                  double penaltyParameter,
+                                                  double tolerance = 1e-8,
+                                                  int maxIterations = 20000,
+                                                  double initialStep = 0.25);
+
+OptimizationResult minimizePenaltyNelderMead(const Point3D &startPoint,
+                                             double penaltyParameter,
+                                             double tolerance = 1e-8,
+                                             int maxIterations = 20000,
+                                             double initialStep = 0.05);
 
 #endif

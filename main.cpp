@@ -712,7 +712,7 @@ int main()
 
         for (double r : penaltySequence)
         {
-            const auto result = minimizePenaltyDirectSearch(currentStart, r, 1e-8, 20000, 0.25);
+            const auto result = minimizePenaltyNelderMead(currentStart, r, 1e-8, 20000, 0.05);
             cout << "  r = " << scientific << setprecision(4) << r << ": "
                  << "f(X) = " << fixed << setprecision(8) << result.objectiveValue
                  << ", zingsniai = " << result.steps
