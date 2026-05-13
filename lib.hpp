@@ -207,7 +207,7 @@ OptimizationResult minimizePenaltySteepestDescent(const Point3D &startPoint,
 
 OptimizationResult minimizePenaltyNelderMead(const Point3D &startPoint,
                                              double penaltyParameter,
-                                             double tolerance = 1e-8,
+                                             double tolerance = 1e-4,
                                              int maxIterations = 20000,
                                              double initialStep = 0.05);
 
